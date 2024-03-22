@@ -8,6 +8,7 @@ public class CavaleirosController extends Thread {
 	private int distTotal;
 	private static boolean tocha = true;
 	private static boolean pedra = true;
+	private static int portaSaida = (int) (Math.random() * 4);
 	private static int[] portas = {0, 0, 0, 0};
 	private Semaphore semaforo;
 	
@@ -20,7 +21,14 @@ public class CavaleirosController extends Thread {
 	public void run() {
 		caminhar();
 		abrirPortas();
-		sortearVencedor();
+		try {
+			semaforo.acquire();
+			sortearVencedor();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}finally {
+			semaforo.release();
+		}
 	}
 	
 	private void caminhar() {
@@ -65,9 +73,10 @@ public class CavaleirosController extends Thread {
 	
 	private void abrirPortas() {
 		boolean isPorta = true;
+		int porta = -1;
 		
 		while(isPorta) {
-			int porta = (int)(Math.random() * 3);
+			porta = (int)(Math.random() * 4);
 			for(int i = 0; i < 4; i++) {
 				if(portas[porta] == 0) {
 					portas[porta] = idCavaleiro;
@@ -75,10 +84,15 @@ public class CavaleirosController extends Thread {
 				}
 			}
 		}
+		System.out.println("Cavaleiro " + idCavaleiro + " entrou na porta " + porta);
+		if(porta != portaSaida){
+			System.out.println("Cavaleiro " + idCavaleiro + " foi devorado pelo monstro!");
+		}
 	}
 	private void sortearVencedor() {
-		int vencedor = (int) Math.random() * 3;
-		System.out.println("Vencedor foi o cavaleiro " + portas[vencedor]);
+		if(portas[portaSaida] != 0){
+			System.out.println("Porta " + (portaSaida) + " era a porta da saída\nVencedor foi o cavaleiro " + portas[portaSaida]);
+		}
 	}
-	
 }
+
